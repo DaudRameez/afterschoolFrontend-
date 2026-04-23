@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cart – After School Lessons</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="cartApp">
+  <header>
+    <h1>Your Cart</h1>
+    <button class="cart-btn" @click="goToLessons">
+      <i class="fa fa-arrow-left"></i> Back to Lessons
+    </button>
+  </header>
+
+  <main>
+    <p v-if="confirmation" class="confirmation">{{ confirmation }}</p>
+
+    <p v-if="cart.length === 0 && !confirmation" class="empty-text">Your cart is empty.</p>
+
+    <div v-if="cart.length > 0">
+      <div v-for="(item, index) in cart" :key="index" class="lesson-card">
+        <div class="icon-box"><i class="fa" :class="item.icon || 'fa-book'"></i></div>
+        <h3>{{ item.subject }}</h3>
+        <p><strong>Location:</strong> {{ item.location }}</p>
+        <p><strong>Price:</strong> AED {{ item.price }}</p>
+        <button @click="removeFromCart(index)">Remove</button>
+      </div>
+
+      <div class="total-box">
+        <h3>Total: AED {{ totalPrice }}</h3>
+      </div>
+
+      <div class="customer-form">
+        <h2>Checkout</h2>
+        <input type="text" v-model="name" placeholder="Name (letters only)"/>
+        <input type="text" v-model="phone" placeholder="Phone (numbers only)"/>
+        <p v-if="error" class="error">{{ error }}</p>
+        <button
+          class="checkout-btn"
+          :disabled="!isValid || loading"
+          @click="checkout">
+          {{ loading ? 'Submitting…' : 'Checkout' }}
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <footer><p>After School Lessons &copy; 2026</p></footer>
+</div>
+
+<script>
+const API_BASE = location.hostname === 'localhost'
+  ? 'http://localhost:3000'
+  : 'https://afterschool-app-backend.onrender.com';
+
+new Vue({
+  el: '#cartApp',
+  data: {
+    cart: JSON.parse(localStorage.getItem('cart') || '[]'),
+    name: '',
+    phone: '',
+    error: '',
+    loading: false,
+    confirmation: ''
+  },
+  computed: {
+    totalPrice() {
+      return this.cart.reduce((sum, i) => sum + Number(i.price), 0);
+    },
+    isNameValid() {
+      return /^[A-Za-z ]+$/.test(this.name.trim()) && this.name.trim().length > 0;
+    },
+    isPhoneValid() {
+      return /^[0-9]+$/.test(this.phone.trim()) && this.phone.trim().length > 0;
+    },
+    isValid() {
+      return this.isNameValid && this.isPhoneValid && this.cart.length > 0;
+    }
+  },
+  methods: {
+    goToLessons() {
+      window.location.href = 'index.html';
+    },
+    removeFromCart(index) {
+      this.cart.splice(index, 1);
+      localStorage.setItem('cart', JSON.stringify(this.cart));
+    },
+    async checkout() {
+      this.error = '';
+      if (!this.isNameValid) { this.error = 'Name must contain letters only.'; return; }
+      if (!this.isPhoneValid) { this.error = 'Phone must contain numbers only.'; return; }
+
+      this.loading = true;
+
+      // aggregate lesson ids + spaces per lesson
+      const counts = {};
+      this.cart.forEach(item => {
+        const key = item._id || item.id;
+        counts[key] = (counts[key] || 0) + 1;
+      });
+      const lessonIds = Object.keys(counts);
+
+      try {
+        // POST fetch — save the order
+        const orderRes = await fetch(`${API_BASE}/api/orders`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: this.name.trim(),
+            phone: this.phone.trim(),
+            lessonIds,
+            numberOfSpaces: this.cart.length
+          })
+        });
+        const orderData = await orderRes.json();
+        if (!orderRes.ok) throw new Error(orderData.error || 'Order failed');
+
+        // PUT fetch — update lesson spaces for each purchased lesson
+        const lessonsRes = await fetch(`${API_BASE}/api/lessons`);
+        const lessons = await lessonsRes.json();
+
+        await Promise.all(lessonIds.map(id => {
+          const lesson = lessons.find(l => String(l._id) === id || String(l.id) === id);
+          if (!lesson) return null;
+          const newSpaces = Math.max(0, Number(lesson.spaces) - counts[id]);
+          const lessonId = lesson._id || lesson.id;
+          return fetch(`${API_BASE}/api/lessons/${lessonId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ spaces: newSpaces })
+          });
+        }));
+
+        this.confirmation = `Order submitted successfully! Order ID: ${orderData.orderId}`;
+        this.cart = [];
+        localStorage.removeItem('cart');
+      } catch (e) {
+        console.error(e);
+        this.error = 'Failed to submit order. Please try again.';
+      } finally {
+        this.loading = false;
+      }
+    }
+  }
+});
+</script>
+</body>
+</html>

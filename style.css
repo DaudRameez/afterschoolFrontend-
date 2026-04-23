@@ -1,0 +1,133 @@
+body {
+  font-family: "Poppins", sans-serif;
+  background-color: #f9fafb;
+  color: #333;
+  margin: 0;
+  text-align: center;
+  padding-bottom: 120px;
+}
+
+header {
+  background: linear-gradient(135deg, #42b883, #2c3e50);
+  padding: 20px;
+  color: white;
+  position: relative;
+}
+
+h1 { margin: 0; font-size: 2rem; }
+
+.cart-btn {
+  margin-top: 10px;
+  background: white;
+  color: #2c3e50;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.cart-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.sort-controls {
+  margin: 20px auto;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.sort-controls select { padding: 6px 10px; border-radius: 6px; border: 1px solid #ccc; }
+
+.lesson-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+  width: 90%;
+  max-width: 1000px;
+  margin: 20px auto 40px;
+}
+
+.lesson-card {
+  background: white;
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  transition: 0.3s ease;
+  max-width: 600px;
+  margin: 15px auto;
+}
+.lesson-card:hover { transform: translateY(-3px); box-shadow: 0 6px 14px rgba(0,0,0,0.15); }
+
+.icon-box {
+  width: 60px; height: 60px;
+  background: #42b883;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 26px;
+  margin: 0 auto 10px;
+}
+
+h3 { margin: 10px 0; color: #2c3e50; }
+
+.details p { margin: 4px 0; font-size: 0.95rem; }
+
+button {
+  background: #42b883;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  margin-top: 8px;
+}
+button:disabled { background: #aaa; cursor: not-allowed; }
+
+.total-box {
+  background: white;
+  border-radius: 12px;
+  padding: 12px;
+  margin: 20px auto;
+  max-width: 400px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.customer-form {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px auto;
+  max-width: 400px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+.customer-form input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+  margin: 8px 0;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.checkout-btn { width: 100%; padding: 12px; font-size: 1rem; }
+
+.error { color: #d9534f; margin: 5px 0; }
+.confirmation {
+  background: #e6f7ec;
+  color: #1e7f45;
+  padding: 16px;
+  border-radius: 10px;
+  max-width: 500px;
+  margin: 20px auto;
+  font-weight: 600;
+}
+.empty-text { margin: 40px 0; color: #666; }
+
+footer {
+  background: #2c3e50;
+  color: white;
+  padding: 10px;
+  position: fixed;
+  bottom: 0; width: 100%;
+}

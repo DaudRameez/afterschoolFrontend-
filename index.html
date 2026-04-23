@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>After School Lessons</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>After School Lessons</h1>
+    <p>Learn with fun and creativity!</p>
+    <button class="cart-btn" :disabled="cart.length === 0" @click="goToCart">
+      <i class="fa fa-shopping-cart"></i>
+      Cart ({{ cart.length }})
+    </button>
+  </header>
+
+  <main>
+    <div class="sort-controls">
+      <label>Sort by:</label>
+      <select v-model="sortAttribute">
+        <option value="subject">Subject</option>
+        <option value="location">Location</option>
+        <option value="price">Price</option>
+        <option value="spaces">Spaces</option>
+      </select>
+
+      <label>Order:</label>
+      <select v-model="sortOrder">
+        <option value="asc">Ascending</option>
+        <option value="desc">Descending</option>
+      </select>
+    </div>
+
+    <div class="lesson-container">
+      <div v-for="lesson in sortedLessons" :key="lesson._id || lesson.id" class="lesson-card">
+        <div class="icon-box"><i class="fa" :class="lesson.icon || 'fa-book'"></i></div>
+        <h3>{{ lesson.subject }}</h3>
+        <div class="details">
+          <p><strong>Location:</strong> {{ lesson.location }}</p>
+          <p><strong>Price:</strong> AED {{ lesson.price }}</p>
+          <p><strong>Spaces left:</strong> {{ lesson.spaces }}</p>
+        </div>
+        <button @click="addToCart(lesson)" :disabled="lesson.spaces === 0">
+          Add to Cart
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <footer><p>After School Lessons &copy; 2026</p></footer>
+</div>
+
+<script>
+const API_BASE = location.hostname === 'localhost'
+  ? 'http://localhost:3000'
+  : 'https://afterschool-app-backend.onrender.com';
+
+new Vue({
+  el: '#app',
+  data: {
+    lessons: [],
+    cart: JSON.parse(localStorage.getItem('cart') || '[]'),
+    sortAttribute: 'subject',
+    sortOrder: 'asc'
+  },
+  mounted() {
+    // GET fetch — load all lessons
+    fetch(`${API_BASE}/api/lessons`)
+      .then(res => res.json())
+      .then(data => {
+        // apply cart decrements that were already made locally
+        const counts = {};
+        this.cart.forEach(item => {
+          const key = item._id || item.id;
+          counts[key] = (counts[key] || 0) + 1;
+        });
+        this.lessons = data.map(l => {
+          const key = l._id || l.id;
+          return { ...l, spaces: l.spaces - (counts[key] || 0) };
+        });
+      })
+      .catch(err => console.error('Failed to fetch lessons:', err));
+  },
+  computed: {
+    sortedLessons() {
+      const list = [...this.lessons];
+      const dir = this.sortOrder === 'asc' ? 1 : -1;
+      return list.sort((a, b) => {
+        let A = a[this.sortAttribute];
+        let B = b[this.sortAttribute];
+        if (this.sortAttribute === 'price' || this.sortAttribute === 'spaces') {
+          A = Number(A); B = Number(B);
+        } else {
+          A = String(A).toLowerCase(); B = String(B).toLowerCase();
+        }
+        if (A < B) return -1 * dir;
+        if (A > B) return  1 * dir;
+        return 0;
+      });
+    }
+  },
+  methods: {
+    addToCart(lesson) {
+      if (lesson.spaces <= 0) return;
+      lesson.spaces -= 1;
+      this.cart.push({
+        _id: lesson._id,
+        id: lesson.id,
+        subject: lesson.subject,
+        location: lesson.location,
+        price: lesson.price,
+        icon: lesson.icon
+      });
+      localStorage.setItem('cart', JSON.stringify(this.cart));
+    },
+    goToCart() {
+      window.location.href = 'cart.html';
+    }
+  }
+});
+</script>
+</body>
+</html>

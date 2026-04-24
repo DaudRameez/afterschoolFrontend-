@@ -15,7 +15,7 @@ Backend is expected on `http://localhost:3000`; on production the code points at
 
 ## Links
 
-- Frontend repo: https://github.com/DaudRameez/afterschool-app
+- Frontend repo: https://github.com/DaudRameez/afterschoolFrontend-
 - GitHub Pages: https://daudrameez.github.io/afterschool-app/
 - Backend repo: https://github.com/DaudRameez/afterschool-app-backend
 - Backend URL:  https://afterschool-app-backend.onrender.com

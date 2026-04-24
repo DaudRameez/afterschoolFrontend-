@@ -1,7 +1,7 @@
 # After School – Frontend (Vue.js)
 
-Static Vue 2 site (CDN, no build step) hosted on **GitHub Pages**.
-Talks to the Express/MongoDB Atlas backend using `fetch` with promises — no axios, no XMLHttpRequest.
+Static Vue 2 site hosted on **GitHub Pages**.
+Talks to the Express/MongoDB Atlas backend using `fetch` with promises.
 
 ## Pages
 
